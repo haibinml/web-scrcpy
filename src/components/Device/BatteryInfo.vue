@@ -2,17 +2,33 @@
   <v-card class="battery-card" flat>
     <v-card-text class="pa-6">
       <div class="text-h6 font-weight-regular mb-4">电池</div>
-      <div
-        class="d-flex flex-column align-center justify-center"
-        style="height: 180px"
-      >
+      <div class="d-flex flex-column align-center justify-center">
         <div class="battery-circle">
           <div class="battery-background"></div>
           <div class="battery-level" :style="batteryLevelStyle"></div>
           <div class="battery-text">{{ batteryPercentage }}%</div>
         </div>
-        <div class="mt-4 text-subtitle-1">
-          {{ formattedVoltage }}V {{ temperature }}°C
+        <div class="mt-4 field-container">
+          <div class="field-item" v-if="!isNaN(batteryChargeCounter)">
+            <span class="field-item-label">剩余电量</span>
+            <span class="field-item-value">{{ batteryChargeCounter }}mAh</span>
+          </div>
+          <div class="field-item" v-if="!isNaN(batteryCurrent)">
+            <span class="field-item-label">当前电流</span>
+            <span class="field-item-value">{{ formattedBatteryCurrent }}mA</span>
+          </div>
+          <div class="field-item" v-if="!isNaN(voltage)">
+            <span class="field-item-label">电池电压</span>
+            <span class="field-item-value">{{ formattedVoltage }}V</span>
+          </div>
+          <div class="field-item" v-if="!isNaN(temperature)">
+            <span class="field-item-label">电池温度</span>
+            <span class="field-item-value">{{ temperature }}°C</span>
+          </div>
+          <div class="field-item" v-if="!isNaN(batteryHealth)">
+            <span class="field-item-label">电池健康</span>
+            <span class="field-item-value">{{ batteryHealth }}%</span>
+          </div>
         </div>
       </div>
     </v-card-text>
@@ -36,6 +52,18 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  batteryHealth: {
+    type: Number,
+    required: true,
+  },
+  batteryChargeCounter: {
+    type: Number,
+    required: true,
+  },
+  batteryCurrent: {
+    type: Number,
+    required: true,
+  },
 });
 
 const batteryLevelStyle = computed(() => {
@@ -46,6 +74,10 @@ const batteryLevelStyle = computed(() => {
 
 const formattedVoltage = computed(() => {
   return isNaN(props.voltage) ? '0.000' : props.voltage.toFixed(3);
+});
+
+const formattedBatteryCurrent = computed(() => {
+  return props.batteryCurrent > 0 ? `+${props.batteryCurrent}` : props.batteryCurrent;
 });
 </script>
 
@@ -59,8 +91,8 @@ const formattedVoltage = computed(() => {
 
 .battery-circle {
   position: relative;
-  width: 140px;
-  height: 140px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   overflow: hidden;
   margin: 0 auto;
@@ -90,9 +122,24 @@ const formattedVoltage = computed(() => {
   left: 50%;
   transform: translate(-50%, -50%);
   color: white;
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 500;
   z-index: 2;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.field-item {
+  width: 100%;
+  font-size: 14px;
+}
+
+.field-item-label {
+  font-weight: 500;
+  color: var(--v-text-primary);
+  margin-right: .5em;
+}
+
+.field-item-value {
+  color: var(--v-text-secondary);
 }
 </style>

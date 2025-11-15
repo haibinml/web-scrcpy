@@ -6,8 +6,8 @@
         <div class="info-row">
           <div class="info-label">品牌</div>
           <div class="info-value">{{ deviceInfo.brand }}</div>
-          <div class="info-label">连接状态</div>
-          <div class="info-value">{{ deviceInfo.type }}</div>
+          <div class="info-label">root 状态</div>
+          <div class="info-value">{{ deviceInfo.rootState }}</div>
         </div>
         <div class="info-row">
           <div class="info-label">型号</div>
@@ -43,15 +43,23 @@
           <div class="info-label">显示密度</div>
           <div class="info-value">{{ deviceInfo.screenDensity }}</div>
           <div class="info-label">闪存类型</div>
-          <div class="info-value">{{ storageType }}</div>
+          <div class="info-value">{{ deviceInfo.storageType }}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">IP 地址</div>
+          <div class="info-value">{{ deviceInfo.ipAddress || '-' }}</div>
         </div>
         <div class="info-row">
           <div class="info-label">主板 ID</div>
           <div class="info-value">{{ deviceInfo.board || '-' }}</div>
         </div>
         <div class="info-row">
-          <div class="info-label">平台</div>
+          <div class="info-label">硬件平台</div>
           <div class="info-value full-width">{{ deviceInfo.hardware }}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">序列号</div>
+          <div class="info-value full-width">{{ deviceInfo.serialNumber }}</div>
         </div>
         <div class="info-row">
           <div class="info-label">编译版本</div>
@@ -78,32 +86,42 @@ const props = defineProps({
 
 // 计算属性：Bootloader 状态
 const bootloaderStatus = computed(() => {
-  // 这里可以添加实际的 bootloader 状态检测逻辑
-  return 'locked';
+  if (['green'].includes(props.deviceInfo.bootloader)) {
+    return 'locked';
+  }
+  return 'unlocked';
 });
 
 // 计算属性：A/B 分区状态
 const abPartitionStatus = computed(() => {
-  // 这里可以添加实际的 A/B 分区检测逻辑
-  return 'A-Only设备';
+  switch (props.deviceInfo.abPartition) {
+    case '_a':
+      return 'Slot A';
+    case '_b':
+      return 'Slot B';
+    default:
+      return 'Unknown';
+  }
 });
 
+
+const formatSeconds = (seconds) => {
+  const parts = [];
+  const d = Math.floor(seconds / 86400);
+  const h = Math.floor(seconds % 86400 / 3600);
+  const m = Math.floor(seconds % 3600 / 60);
+  const s = Math.floor(seconds % 60);
+  
+  if (d) parts.push(d + '天');
+  if (h) parts.push(h + '小时');
+  if (m) parts.push(m + '分');
+  if (s || !parts.length) parts.push(s + '秒');
+  
+  return parts.join('');
+};
 // 计算属性：开机时间
 const uptime = computed(() => {
-  // 这里可以添加实际的开机时间计算逻辑
-  return '0天6时44分44秒';
-});
-
-// 计算属性：存储类型
-const storageType = computed(() => {
-  // 这里可以添加实际的存储类型检测逻辑
-  return 'UFS';
-});
-
-// 计算属性：内核版本
-const kernelVersion = computed(() => {
-  // 这里可以添加实际的内核版本获取逻辑
-  return '49.537-UOTAN-PE14-STABLE+';
+  return formatSeconds(props.deviceInfo.uptime);
 });
 </script>
 

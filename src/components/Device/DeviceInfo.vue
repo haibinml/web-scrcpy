@@ -45,11 +45,16 @@ const deviceInfo = ref({
     batteryPercentage: 0,
     voltage: 0,
     temperature: 0,
+    batteryHealth: 0,
+    batteryChargeCounter: 0,
+    batteryCurrent: 0,
+    oemLockedState: '',
     bootloader: '',
     abPartition: '',
     uptime: '',
     storageType: '',
     kernelVersion: '',
+    rootState: 'none',
 });
 
 async function executeShellCommand(device: Adb, command: string): Promise<string> {
@@ -139,9 +144,16 @@ async function getDeviceInfo() {
         batteryPercentage: parseInt(await executeShellCommand(adbDevice, 'dumpsys battery | grep level | awk \'{print $2}\''), 10),
         voltage: parseFloat((await executeShellCommand(
             adbDevice, 
-            'dumpsys battery | grep voltage | awk \'{print $2}\''
+            'dumpsys battery | grep "  voltage" | awk \'{print $2}\''
         )) || '0') / 1000,
         temperature: parseInt(await executeShellCommand(adbDevice, 'dumpsys battery | grep temperature | awk \'{print $2}\''), 10) / 10,
+        batteryHealth: parseInt(await executeShellCommand(adbDevice, 'dumpsys battery | grep mSavedBatteryAsoc | awk \'{print $2}\''), 10),
+        batteryChargeCounter: parseFloat(await executeShellCommand(adbDevice, 'dumpsys battery | grep "Charge counter" | awk \'{print $3}\'') || '0') / 1000,
+        batteryCurrent: parseInt(await executeShellCommand(adbDevice, 'dumpsys battery | grep "current now" | awk \'{print $3}\''), 10),
+        oemLockedState: await executeShellCommand(
+            adbDevice,
+            'getprop ro.boot.flash.locked'
+        ),
         bootloader: await executeShellCommand(
             adbDevice,
             'getprop ro.boot.verifiedbootstate'
@@ -156,11 +168,15 @@ async function getDeviceInfo() {
         ),
         storageType: await executeShellCommand(
             adbDevice,
-            'getprop ro.boot.bootdevice'
+            'if getprop ro.boot.bootdevice | grep -qi ufs; then echo UFS; else echo eMMC; fi'
         ),
         kernelVersion: await executeShellCommand(
             adbDevice,
             'uname -r'
+        ),
+        rootState: await executeShellCommand(
+            adbDevice,
+            'ls /system/bin/su > /dev/null 2>&1 && echo rooted || echo none'
         ),
     };
 }
@@ -322,6 +338,9 @@ onMounted(async () => {
                             :batteryPercentage="deviceInfo.batteryPercentage" 
                             :voltage="deviceInfo.voltage" 
                             :temperature="deviceInfo.temperature" 
+                            :batteryHealth="deviceInfo.batteryHealth"
+                            :batteryChargeCounter="deviceInfo.batteryChargeCounter"
+                            :batteryCurrent="deviceInfo.batteryCurrent"
                         />
                         <StorageInfo :deviceInfo="deviceInfo" />
                     </div>
