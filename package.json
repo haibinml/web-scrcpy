@@ -30,11 +30,13 @@
     "@yume-chan/struct": "^2.0.1",
     "file-saver": "^2.0.5",
     "markdown-it": "^14.1.0",
+    "peerjs": "^1.5.5",
     "vue": "^3.3.4",
     "vuetify": "^3.3.5",
     "webm-muxer": "^5.0.3"
   },
   "devDependencies": {
+    "@fast-check/vitest": "^0.2.4",
     "@mdi/font": "^7.1.96",
     "@rushstack/eslint-patch": "^1.10.4",
     "@types/lodash": "^4.14.194",
@@ -58,6 +60,7 @@
     "typescript": "5.2.2",
     "vite": "^5.2.11",
     "vite-plugin-vuetify": "^2.0.3",
+    "vitest": "^1.6.1",
     "vue-tsc": "^2.0.19"
   }
 }

@@ -396,11 +396,7 @@ export class ScrcpyState {
         renderer: VideoFrameRenderer;
         element: HTMLVideoElement | HTMLCanvasElement;
     } {
-        if (InsertableStreamVideoFrameRenderer.isSupported) {
-          const renderer = new InsertableStreamVideoFrameRenderer();
-          return { renderer, element: renderer.element as HTMLVideoElement };
-        }
-
+        // 优先使用 Canvas 渲染器，便于 captureStream 捕获视频流
         if (WebGLVideoFrameRenderer.isSupported) {
             const renderer = new WebGLVideoFrameRenderer();
             return { renderer, element: renderer.canvas as HTMLCanvasElement };
