@@ -83,44 +83,22 @@ const buttons = ref([
 ]);
 
 async function takeScreenshot() {
-    if(!client.device) return;
+    if (!state.decoder) {
+        console.error('截图失败: 解码器不可用');
+        return;
+    }
 
     try {
         const timestamp = formatDateTime(new Date());
         const deviceName = client.deviceName?.replace(/[^a-zA-Z0-9-_]/g, '_') || 'device';
         const fileName = `screenshot_${deviceName}_${timestamp}.png`;
 
-        // 执行screencap命令并保存到/tmp/screenshot.png
-        await client.device.subprocess.noneProtocol!.spawnWait([
-            'screencap',
-            '-p',
-            '/tmp/screenshot.png'
-        ]);
-
-        // 从/tmp/screenshot.png读取并保存为文件
-        const tempFile = `/tmp/screenshot.png`;
-        const sync = await client.device.sync();
-        try {
-            const stream = await sync.read(tempFile);
-            
-            const reader = stream.getReader();
-            const chunks: Uint8Array[] = [];
-            
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                
-                chunks.push(value);
-            }
-            
-            const blob = new Blob(chunks as BlobPart[], { type: 'image/png' });
+        // 使用 decoder 的 snapshot 方法从视频流获取截图
+        const blob = await state.decoder.snapshot();
+        if (blob) {
             saveAs(blob, fileName);
-        } finally {
-            await sync.dispose();
-            await client.device.subprocess.noneProtocol!.spawnWait([
-                'rm',
-                tempFile
-            ]);
+        } else {
+            console.error('截图失败: 没有可用的视频帧');
         }
     } catch (error) {
         console.error('截图保存失败:', error);
